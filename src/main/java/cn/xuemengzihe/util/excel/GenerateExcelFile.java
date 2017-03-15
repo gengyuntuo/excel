@@ -38,10 +38,11 @@ public class GenerateExcelFile {
 
 	@Test
 	public void generateExcelToLocalDir() throws IOException {
-		FileOutputStream file = new FileOutputStream("workbook.xls");
+		FileOutputStream file1 = new FileOutputStream("workbook1.xls");
+		FileOutputStream file2 = new FileOutputStream("workbook2.xls");
 		Sheet sheet = workbook.createSheet();
 		createTitleCell(sheet, "Title", 6);
-		createColumnsName(sheet, new String[] { "列名1", "列名2", "列名3", "列名4",
+		createColumnNames(sheet, new String[] { "列名1", "列名2", "列名3", "列名4",
 				"列名5", "列名6" });
 		String[] colsName = new String[] { "列名1", "列名2", "列名3", "列名4", "列名5",
 				"列名6" };
@@ -55,8 +56,10 @@ public class GenerateExcelFile {
 		}
 		createSheetContent(sheet, list);
 		workbook.close();
-		workbook.write(file);
-		file.close();
+		workbook.write(file1);
+		workbook.write(file2);
+		file1.close();
+		file2.close();
 	}
 
 	/**
@@ -98,7 +101,7 @@ public class GenerateExcelFile {
 	 *            列名数组
 	 * @return 工作表
 	 */
-	public Sheet createColumnsName(Sheet sheet, String... colsName) {
+	public Sheet createColumnNames(Sheet sheet, String... colsName) {
 		Row row = sheet.createRow(1);
 		// 单元格字体美化
 		Font font = workbook.createFont();
