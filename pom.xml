@@ -3,7 +3,7 @@
 	<groupId>cn.xuemengzihe.util</groupId>
 	<artifactId>excel</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<build />
+	<name>Excel-Support</name>
 	<properties>
 		<poi.verison>3.15</poi.verison>
 		<junit.version>4.11</junit.version>
