@@ -54,12 +54,35 @@ public class ParseExcelFile implements Closeable {
 	}
 
 	/**
-	 * 获得当前文件的解析状态
+	 * 获取Cell（单元格）中的内容，并返回其值（String类型）
 	 * 
+	 * @param cell
 	 * @return
 	 */
-	public String getParseStatus() {
-		return this.parseStatus;
+	@SuppressWarnings("deprecation")
+	private String getCellValue(Cell cell) {
+		String value = null;
+		switch (cell.getCellType()) {
+		case Cell.CELL_TYPE_BLANK:
+			value = "";
+			break;
+		case Cell.CELL_TYPE_BOOLEAN:
+			value = cell.getBooleanCellValue() ? "Y" : "N";
+			break;
+		case Cell.CELL_TYPE_ERROR:
+			value = "";
+			break;
+		case Cell.CELL_TYPE_FORMULA:
+			value = cell.getCellFormula();
+			break;
+		case Cell.CELL_TYPE_NUMERIC:
+			value = cell.getNumericCellValue() + "";
+			break;
+		case Cell.CELL_TYPE_STRING:
+			value = cell.getStringCellValue();
+			break;
+		}
+		return value;
 	}
 
 	/**
@@ -88,8 +111,9 @@ public class ParseExcelFile implements Closeable {
 	 * 使用Excel文件的File对象构造
 	 * 
 	 * @param file
+	 * @throws IOException
 	 */
-	public ParseExcelFile(File file) {
+	public ParseExcelFile(File file) throws IOException {
 		try {
 			inputStream = new FileInputStream(file);
 			workBook = new HSSFWorkbook(inputStream);
@@ -105,7 +129,29 @@ public class ParseExcelFile implements Closeable {
 			} catch (IOException e1) {
 			}
 			e.printStackTrace();
+			throw e;
 		}
+	}
+
+	/**
+	 * 获得当前文件的解析状态
+	 * 
+	 * @return
+	 */
+	public String getParseStatus() {
+		return this.parseStatus;
+	}
+
+	/**
+	 * 获得当前文件的中工作表的数量
+	 * 
+	 * @return
+	 */
+	public int getSheetNumber() {
+		if (workBook != null) {
+			return workBook.getNumberOfSheets();
+		} else
+			return 0;
 	}
 
 	/**
@@ -118,8 +164,11 @@ public class ParseExcelFile implements Closeable {
 	public String getSheetTitle(int sheetNum) {
 		Sheet sheet = workBook.getSheetAt(sheetNum);
 		Row row = sheet.getRow(0);
+		if (row == null) {
+			return "";
+		}
 		Cell cell = row.getCell(0);
-		String value = cell.getStringCellValue();
+		String value = getCellValue(cell);
 		logger.debug("Excel: get sheet title ->" + value);
 		return value;
 	}
@@ -135,12 +184,14 @@ public class ParseExcelFile implements Closeable {
 		List<String> columnNames = new ArrayList<>();
 		Sheet sheet = workBook.getSheetAt(sheetNum);
 		Row row = sheet.getRow(1); // 默认第二行为列标题
+		if (row == null)
+			return columnNames;
 		Cell cell = null;
 		for (int i = 0; i < row.getLastCellNum(); i++) {
 			cell = row.getCell(i);
 			if (cell == null) // 遇到空的单元格就停止解析
 				break;
-			columnNames.add(cell.getStringCellValue());
+			columnNames.add(getCellValue(cell));
 		}
 		logger.debug("Excel: get sheet column names ->" + columnNames);
 		return columnNames;
@@ -153,6 +204,7 @@ public class ParseExcelFile implements Closeable {
 	 *            工作表的序号， 从0开始
 	 * @return 工作表内容
 	 */
+	@SuppressWarnings("deprecation")
 	public List<Map<String, String>> getSheetContent(int sheetNum) {
 		List<Map<String, String>> content = new ArrayList<>();
 		Map<String, String> rowValue = null;
@@ -170,9 +222,9 @@ public class ParseExcelFile implements Closeable {
 			// 遍历每一列的值
 			for (int j = 0; j < colNames.size(); j++) {
 				cell = row.getCell(j);
-				if (cell == null) // 如果Cell为空，则跳过不读
+				if (cell == null || cell.getCellType() == Cell.CELL_TYPE_BLANK) // 如果Cell为空，则舍弃改行
 					continue;
-				rowValue.put(colNames.get(j), cell.getStringCellValue());
+				rowValue.put(colNames.get(j), getCellValue(cell));
 			}
 			content.add(rowValue);
 		}
