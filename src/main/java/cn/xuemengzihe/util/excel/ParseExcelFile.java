@@ -76,7 +76,7 @@ public class ParseExcelFile implements Closeable {
 			value = cell.getCellFormula();
 			break;
 		case Cell.CELL_TYPE_NUMERIC:
-			value = cell.getNumericCellValue() + "";
+			value = Double.valueOf(cell.getNumericCellValue()).longValue() + "";
 			break;
 		case Cell.CELL_TYPE_STRING:
 			value = cell.getStringCellValue();
