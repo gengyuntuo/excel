@@ -138,11 +138,15 @@ public class GenerateExcelFile implements Closeable {
 	 * @param value
 	 *            值
 	 */
-	public void writeValue(int rownum, int column, String value) {
+	public void writeValue(int rownum, int column, Object value) {
 		selectRow(rownum); // 选择行
 		selectCell(column); // 选择列
 		this.cell.setCellStyle(this.style);
-		this.cell.setCellValue(value);
+		if (value instanceof Double) {
+			this.cell.setCellValue((Double) value);
+		} else {
+			this.cell.setCellValue(value.toString());
+		}
 		this.curColumn++; // 将光标指向下一列
 	}
 
@@ -152,7 +156,7 @@ public class GenerateExcelFile implements Closeable {
 	 * @param value
 	 *            值
 	 */
-	public void writeValue(String value) {
+	public void writeValue(Object value) {
 		this.writeValue(this.curRow, this.curColumn, value);
 	}
 
